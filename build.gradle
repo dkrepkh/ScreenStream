@@ -1,0 +1,26 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.javabender.screenstream'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("org.bytedeco:javacv-platform:1.5.10")
+}
+
+tasks.withType(JavaCompile) {
+    // Устанавливаем кодировку UTF-8 для исходников
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(ProcessResources) {
+    // Устанавливаем кодировку UTF-8 для ресурсов
+    filesMatching("**/*.properties") {
+        filter { line -> new String(line.getBytes("ISO-8859-1"), "UTF-8") }
+    }
+}
