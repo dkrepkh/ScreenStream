@@ -15,8 +15,8 @@ public class StreamManager {
     private final VideoStream videoStream;
     private final ScreenCapture screenCapture;
 
-    private final BlockingQueue<Frame> frameBuffer;
-    private final ExecutorService executorService;
+    private BlockingQueue<Frame> frameBuffer;
+    private final StreamThreadPool threadPool;
     private final AtomicBoolean hasStopped = new AtomicBoolean(false);
 
     public StreamManager(String ipAddress, int frameRate) throws UnknownHostException, AWTException {
@@ -26,10 +26,14 @@ public class StreamManager {
         if (!isIPAddressAvailable(ipAddress)) {
             throw new UnknownHostException("Server is not available: " + ipAddress);
         }
-        executorService = Executors.newFixedThreadPool(2);
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        int physicalWidth = gd.getDisplayMode().getWidth();
+        int physicalHeight = gd.getDisplayMode().getHeight();
+        System.out.println("Physical screen resolution: " + physicalWidth + "x" + physicalHeight);
+        threadPool = new StreamThreadPool(hasStopped);
         frameBuffer = new LinkedBlockingQueue<>(100);
-        screenCapture = new ScreenCapture(frameBuffer, frameRate);
-        videoStream = new VideoStream(String.format("rtmp://%s:1935/live/mystream", ipAddress), frameBuffer, frameRate);
+        screenCapture = new ScreenCapture(frameBuffer, frameRate, physicalHeight, physicalWidth, hasStopped);
+        videoStream = new VideoStream(String.format("rtmp://%s:1935/live/mystream", ipAddress), frameBuffer, frameRate, physicalHeight, physicalWidth, hasStopped);
     }
 
     private boolean isIPAddressValid(String ipAddress) {
@@ -52,8 +56,8 @@ public class StreamManager {
 
     public void startStream() {
         try {
-            executorService.submit(screenCapture);
-            executorService.submit(videoStream);
+            threadPool.submit(screenCapture);
+            threadPool.submit(videoStream);
             System.out.println("Streaming started.");
         } catch (RejectedExecutionException e) {
             System.err.println("Error starting stream tasks: " + e.getMessage());
@@ -62,19 +66,8 @@ public class StreamManager {
     }
 
     public void stopStream() {
-        hasStopped.set(true);  // Signal all threads to stop
-        executorService.shutdown();
-        try {
-            if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
-                System.err.println("Forcing shutdown of stream tasks...");
-                executorService.shutdownNow(); // Force stop if tasks don't complete in time
-            }
-            System.out.println("Streaming stopped.");
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();  // Restore interrupted status
-            System.err.println("Stream stop interrupted: " + e.getMessage());
-            executorService.shutdownNow();
-        }
+        hasStopped.set(true);
+        threadPool.shutdown();
     }
 }
 
