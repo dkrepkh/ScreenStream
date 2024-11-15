@@ -6,8 +6,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class StreamThreadPool {
-    private ExecutorService executor;
-    private AtomicBoolean hasStopped;
+    private final ExecutorService executor;
+    private final AtomicBoolean hasStopped;
 
     public StreamThreadPool(AtomicBoolean hasStopped) {
         executor = Executors.newFixedThreadPool(2, new ThreadPool());

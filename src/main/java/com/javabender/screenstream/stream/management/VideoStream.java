@@ -11,9 +11,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class VideoStream implements Runnable {
-    private BlockingQueue<Frame> frameBuffer;
-    private FFmpegFrameRecorder recorder;
-    private AtomicBoolean hasStopped;
+    private final BlockingQueue<Frame> frameBuffer;
+    private final FFmpegFrameRecorder recorder;
+    private final AtomicBoolean hasStopped;
 
     VideoStream(String inetAddress, BlockingQueue<Frame> frameBuffer, int frameRate, int screenHeight, int screenWidth, AtomicBoolean hasStopped) {
         this.frameBuffer = frameBuffer;

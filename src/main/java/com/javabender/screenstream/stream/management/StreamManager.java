@@ -15,11 +15,10 @@ public class StreamManager {
     private final VideoStream videoStream;
     private final ScreenCapture screenCapture;
 
-    private BlockingQueue<Frame> frameBuffer;
     private final StreamThreadPool threadPool;
     private final AtomicBoolean hasStopped = new AtomicBoolean(false);
 
-    public StreamManager(String ipAddress, int frameRate) throws UnknownHostException, AWTException {
+    public StreamManager(String ipAddress, int frameRate) throws UnknownHostException {
         if (!isIPAddressValid(ipAddress)) {
             throw new IllegalArgumentException("Invalid IP address: " + ipAddress);
         }
@@ -31,7 +30,7 @@ public class StreamManager {
         int physicalHeight = gd.getDisplayMode().getHeight();
         System.out.println("Physical screen resolution: " + physicalWidth + "x" + physicalHeight);
         threadPool = new StreamThreadPool(hasStopped);
-        frameBuffer = new LinkedBlockingQueue<>(100);
+        BlockingQueue<Frame> frameBuffer = new LinkedBlockingQueue<>(100);
         screenCapture = new ScreenCapture(frameBuffer, frameRate, physicalHeight, physicalWidth, hasStopped);
         videoStream = new VideoStream(String.format("rtmp://%s:1935/live/mystream", ipAddress), frameBuffer, frameRate, physicalHeight, physicalWidth, hasStopped);
     }
