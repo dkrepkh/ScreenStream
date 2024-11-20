@@ -11,6 +11,10 @@ repositories {
 
 dependencies {
     implementation("org.bytedeco:javacv-platform:1.5.10")
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    implementation 'net.java.dev.jna:jna:5.10.0'
+    implementation 'net.java.dev.jna:jna-platform:5.10.0'
 }
 
 tasks.withType(JavaCompile) {
@@ -23,4 +27,8 @@ tasks.withType(ProcessResources) {
     filesMatching("**/*.properties") {
         filter { line -> new String(line.getBytes("ISO-8859-1"), "UTF-8") }
     }
+}
+
+test {
+    useJUnitPlatform()
 }

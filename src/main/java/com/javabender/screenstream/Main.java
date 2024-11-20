@@ -1,6 +1,6 @@
 package com.javabender.screenstream;
 
-import com.javabender.screenstream.stream.management.StreamManager;
+import com.javabender.screenstream.stream.management.Stream;
 
 import java.awt.*;
 import java.io.IOException;
@@ -16,7 +16,7 @@ public class Main {
         if(ipAddress.isEmpty()) {
             ipAddress = "127.0.0.1";
         }
-        StreamManager streamManager = new StreamManager(ipAddress, FRAME_RATE);
-        streamManager.startStream();
+        Stream stream = Stream.getInstance(ipAddress, 30);
+        stream.start();
     }
 }
